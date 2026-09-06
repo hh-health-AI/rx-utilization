@@ -15,6 +15,7 @@ Claim counts are not revenue.
 import argparse, collections, csv, json, sys, urllib.parse, urllib.request
 
 from _ua import user_agent
+from _pagination import fetch_all
 
 BASE = "https://data.cms.gov"
 UA = user_agent("partd-prescribers")
@@ -38,20 +39,13 @@ def discover():
 
 
 def fetch(dataset_id, filters, size, max_rows):
-    rows, offset = [], 0
-    while offset < max_rows:
-        params = {"size": str(size), "offset": str(offset)}
+    def page(offset, requested):
+        params = {"size": str(requested), "offset": str(offset)}
         for k, v in filters.items():
             params[f"filter[{k}]"] = v
         url = f"{BASE}/data-api/v1/dataset/{dataset_id}/data?" + urllib.parse.urlencode(params)
-        batch = get(url)
-        if not isinstance(batch, list) or not batch:
-            break
-        rows.extend(batch)
-        if len(batch) < size:
-            break
-        offset += size
-    return rows
+        return get(url)
+    return fetch_all(page, size, max_rows)
 
 
 def summarise(rows):
@@ -117,7 +111,10 @@ def main():
     if a.state:
         f["Prscrbr_State_Abrvtn"] = a.state.upper()
 
-    rows = fetch(a.dataset_id, f, a.size, a.max_rows)
+    try:
+        rows = fetch(a.dataset_id, f, a.size, a.max_rows)
+    except (ValueError, KeyError, TypeError) as exc:
+        ap.exit(2, str(exc) + "\n")
     if not rows:
         sys.stderr.write("NO ROWS. Check spelling of the brand as CMS records it "
                          "(and the year of the dataset) before concluding anything.\n")

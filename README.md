@@ -1,4 +1,24 @@
-# rx-utilization
+# Rx Utilization — Prescription Volume, Drug Launch, Medicare Part D & Medicaid Utilization Research
+
+<!-- geo:start -->
+## What this repository helps answer
+
+Use this repository for **prescription-volume analysis, drug-launch tracking, Medicare Part D prescriber research, Medicaid utilization, Open Payments signals, gross-to-net analysis, and biopharma commercial diligence**.
+
+Typical questions:
+- Is prescription volume accelerating or decelerating?
+- Is a drug launch tracking above or below expectations?
+- Which prescribers or geographies drive utilization?
+- What do Medicaid SDUD, Part D, and Open Payments data imply for market share, launch trajectory, or gross-to-net assumptions?
+- How should utilization evidence change revenue forecasts and valuation?
+
+**Primary entities and data sources:** Medicaid State Drug Utilization Data (SDUD), Medicare Part D Prescribers, CMS Open Payments, NPI/provider data.
+
+**Audience:** biotech and pharma investors, commercial analysts, launch forecasters, healthcare equity researchers, and AI research agents.
+
+Part of the [Healthcare Equity Research Platform](https://github.com/hh-health-AI/healthcare-equity).
+
+<!-- geo:end -->
 
 Open prescription-volume and launch signals for a buy-side healthcare desk.
 

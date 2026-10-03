@@ -85,3 +85,25 @@ Review them before use.
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Complete-population queries
+
+The SDUD, Part D and Open Payments clients now share strict offset pagination.
+They probe beyond an exact row cap and reject truncation, malformed pages, ignored
+page sizes and repeated pages. On failure the CLI exits nonzero without emitting
+partial population data or a summary. Narrow filters or raise `--max-rows` when
+the cap is reached. Successful JSON/CSV layouts remain compatible.
+
+Completeness here means the API pagination completed; it does not remove source
+suppression, reporting lag, product-filter limitations or changing source vintages.
+
+## Regression tests
+
+Run offline with Python 3.10 or newer (standard library only):
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Tests use synthetic fixtures and mocked APIs; they do not certify live endpoint
+availability or current regulatory facts. GitHub Actions runs the same tests on PRs.

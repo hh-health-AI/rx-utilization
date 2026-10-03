@@ -22,6 +22,7 @@ Notes
 import argparse, csv, json, sys, urllib.parse, urllib.request
 
 from _ua import user_agent
+from _pagination import fetch_all
 
 BASE = "https://data.medicaid.gov"
 UA = user_agent("sdud-query")
@@ -89,14 +90,12 @@ def main():
     if a.utilization_type:
         cond.append(("utilization_type", "=", a.utilization_type))
 
-    rows, offset = [], 0
-    while offset < a.max_rows:
-        res = query(a.dataset_id, cond, a.limit, offset)
-        batch = res.get("results") or []
-        rows.extend(batch)
-        if len(batch) < a.limit:
-            break
-        offset += a.limit
+    try:
+        rows = fetch_all(lambda offset, requested:
+                         query(a.dataset_id, cond, requested, offset)["results"],
+                         a.limit, a.max_rows)
+    except (ValueError, KeyError, TypeError) as exc:
+        ap.exit(2, str(exc) + "\n")
 
     if not rows:
         sys.stderr.write("NO ROWS RETURNED. This is not evidence of zero utilisation -- "

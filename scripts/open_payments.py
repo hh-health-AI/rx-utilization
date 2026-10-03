@@ -15,6 +15,7 @@ January. This is a STRUCTURAL signal, not a tradeable one.
 import argparse, collections, json, sys, urllib.parse, urllib.request
 
 from _ua import user_agent
+from _pagination import fetch_all
 
 BASE = "https://openpaymentsdata.cms.gov"
 UA = user_agent("open-payments")
@@ -37,20 +38,15 @@ def discover(year):
 
 
 def query(dataset_id, conditions, limit, max_rows):
-    rows, offset = [], 0
-    while offset < max_rows:
-        params = {"limit": str(limit), "offset": str(offset)}
+    def page(offset, requested):
+        params = {"limit": str(requested), "offset": str(offset)}
         for i, (prop, op, val) in enumerate(conditions):
             params[f"conditions[{i}][property]"] = prop
             params[f"conditions[{i}][operator]"] = op
             params[f"conditions[{i}][value]"] = val
         url = f"{BASE}/api/1/datastore/query/{dataset_id}/0?" + urllib.parse.urlencode(params)
-        batch = get(url).get("results") or []
-        rows.extend(batch)
-        if len(batch) < limit:
-            break
-        offset += limit
-    return rows
+        return get(url)["results"]
+    return fetch_all(page, limit, max_rows)
 
 
 NATURE_MEANING = {
@@ -116,7 +112,10 @@ def main():
         cond.append(("name_of_drug_or_biological_or_device_or_medical_supply_1",
                      "contains", a.product))
 
-    rows = query(a.dataset_id, cond, a.limit, a.max_rows)
+    try:
+        rows = query(a.dataset_id, cond, a.limit, a.max_rows)
+    except (ValueError, KeyError, TypeError) as exc:
+        ap.exit(2, str(exc) + "\n")
     if not rows:
         sys.stderr.write("NO ROWS. Check manufacturer legal entity name (it is often "
                          "not the ticker name) and product spelling.\n")
